@@ -1,0 +1,9 @@
+[submodule "libs/blend2d"]
+	path = sry/blend2d
+	url = git://github.com/blend2d/blend2d
+[submodule "libs/pybind11"]
+	path = src/pybind11
+	url = git://github.com/pybind/pybind11
+[submodule "libs/asmjit"]
+	path = src/blend2d/3rdparty/asmjit
+	url = git://github.com/asmjit/asmjit
