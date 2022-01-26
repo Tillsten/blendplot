@@ -1,6 +1,13 @@
 #pragma once
 #include "./common.h"
 
+struct TransStack {
+  BLMatrix2D pixel;
+  BLMatrix2D figure_in;
+  BLMatrix2D axes_in;
+  BLMatrix2D axes_data;
+};
+
 class Canvas {
 private:
   
@@ -43,10 +50,9 @@ public:
     return 1;
   }
 
-  int draw() {
-    
+  int draw() {    
     BLContextCreateInfo cfg;
-    cfg.threadCount = 4;
+    cfg.threadCount = 12;
 
     ctx.begin(image, cfg);
     ctx.setCompOp(BL_COMP_OP_SRC_OVER);

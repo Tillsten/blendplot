@@ -1,11 +1,5 @@
 #pragma once
-#include "common.h"
-#include "xtensor/xvectorize.hpp"
-#include <blend2d.h>
-#include <concepts>
-#include <functional>
-#include <iterator>
-#include <vector>
+#include "./common.h"
 
 class Artist {
 public:
@@ -13,14 +7,55 @@ public:
   oColor facecolor;
   oColor strokeColor;
   float zOrder{0.};
+
+  virtual ~Artist(){};
 };
 
-//void generate_rects(xt::xarray<double> x, xt::xarray<double> y,
+// void generate_rects(xt::xarray<double> x, xt::xarray<double> y,
 //                    std::function<double(double, double)> func) {
 //  auto mg = xt::meshgrid(x, y);
 //  auto f = xt::vectorize(func);
 //  f(std::tie(mg));
 //}
+
+class Mesh : public Artist {
+public:
+  std::vector<double> x;
+  std::vector<double> y;
+  std::vector<double> z;
+  BLArray<BLRect> rects;
+  glb::ColorMapper cm;
+  void draw(BLContext &ctx) override;
+
+  Mesh(std::vector<double> xi, std::vector<double> yi, std::vector<double> zi) {
+    x = xi;
+    y = yi;
+    z = zi;
+
+    for (int i = 0; i < x.size() - 1; i++) {
+      for (int j = 0; j < y.size() - 1; j++) {
+        rects.append(BLRect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]));        
+      }      
+    }
+    cm.max = *std::max_element(z.begin(), z.end());
+    cm.min = *std::min_element(z.begin(), z.end());
+  }
+};
+
+void Mesh::draw(BLContext &ctx) {
+
+  int i = 0;
+  for (auto &r : rects) {
+    auto color = cm.get_color(z[i ]);
+    ctx.setFillStyle(color);
+    ctx.fillRect(r);
+    if (i % y.size() == 0) {
+      i++;
+    };
+    i++;
+    
+  }
+};
 
 class Line : public Artist {
 public:
@@ -75,7 +110,7 @@ public:
 
   TextVA va = TextVA::top;
   TextHA ha = TextHA::center;
-
+  virtual ~Text(){};
   Text(std::wstring txt, double x, double y) {
     pos.reset(x, y);
 
@@ -132,7 +167,7 @@ public:
     // transform.invert();
     BLPoint pos_px = transform.mapPoint(pos);
     ctx.resetMatrix();
-    auto fc = facecolor.value_or(colors.get_color("black"));
+    auto fc = facecolor.value_or(glb::colors.get_color("black"));
     ctx.setFillStyle(fc);
     ctx.fillGlyphRun(pos_px + shifted_pos, font, gb.glyphRun());
   }

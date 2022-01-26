@@ -5,11 +5,9 @@
 #include <unordered_map>
 #include <vector>
 
-
-
 class Font {
-    
-public:  
+
+public:
   BLFont font;
   float size{0};
   std::unordered_map<std::wstring, BLPath> cache;
@@ -41,19 +39,18 @@ public:
 };
 
 typedef std::pair<BLFontFace *, int> font_key;
-typedef std::pair<int, string> path_key;
-
+typedef std::pair<int, std::string> path_key;
 
 class FontManager {
 private:
   std::vector<BLFontFace> face_list;
-  std::map<string, BLFontFace *> face_cache;
+  std::map<std::string, BLFontFace *> face_cache;
   std::map<font_key, Font> font_cache;
 
 public:
   Font std_font;
-  BLFontFace get_face(const string name);
-  Font get_font(const string name, const float size);
+  BLFontFace get_face(const std::string name);
+  Font get_font(const std::string name, const float size);
   // BLPath get_text_path(BLFont, string);
 
   FontManager() {
@@ -64,7 +61,7 @@ public:
   }
 };
 
-BLFontFace FontManager::get_face(const string name) {
+BLFontFace FontManager::get_face(const std::string name) {
   size_t cnt = face_cache.count(name);
   BLFontFace face;
   if (cnt == 0) {
@@ -73,14 +70,14 @@ BLFontFace FontManager::get_face(const string name) {
       throw;
     };
     face_list.push_back(face);
-    face_cache.insert(make_pair(name, &face));
+    face_cache.insert(std::make_pair(name, &face));
   } else {
     face = *face_cache.at(name);
   };
   return face;
 }
 
-Font FontManager::get_font(const string name, const float size) {
+Font FontManager::get_font(const std::string name, const float size) {
   BLFontFace face = get_face(name);
   BLFont font;
 

@@ -1,25 +1,27 @@
-#include <array>
-#include <iterator>
-#include <map>
-#include "blend2d.h"
+#pragma once
+#include "./common.h"
+
+std::array<BLRgba32, 256> make_turbo() {
+  std::array<BLRgba32, 256> out;
 #include "turbo_cmap.h"
+  for (int i{0}; i < 256; i++) {
 
-
-using namespace std;
-
+    out[i] = BLRgba32((int)turbo_srgb_bytes[i][0], (int)turbo_srgb_bytes[i][1],
+                      (int)turbo_srgb_bytes[i][2], 255);
+  }
+  return out;
+}
 class ColorMapper {
 public:
-  double min{0};
-  double max{1};
-  std::array<BLRgba32, 256> lut;
+  float min{0};
+  float max{1};
+  std::array<BLRgba32, 256> lut = make_turbo();
   BLRgba32 under_color{0, 0, 0, 0};
   BLRgba32 over_color{0, 0, 0, 0};
 
-  ColorMapper() { lut = make_turbo(); };
-
-  BLRgba32 get_color(double val) {
-    int idx = (int) (255.5 * (val - min) / (max - min));
-    if ((idx <= 255) & (0 <= idx)) {
+  BLRgba32 get_color(float val) {
+    int idx = (int)(255.5 * (val - min) / (max - min));
+    if ((idx <= 255) and (0 <= idx)) {
       return lut[idx];
     } else {
       if (idx > 255) {
@@ -31,18 +33,13 @@ public:
   }
 };
 
-
-
 TEST_CASE("ColoMapper", "[color]") {
-  ColorMapper cm = ColorMapper();
-
-  REQUIRE(cm.get_color(-1) == cm.under_color);
-  REQUIRE(cm.get_color(0) == cm.lut[0]);
-  REQUIRE(cm.get_color(1) == cm.lut[255]);
-  REQUIRE(cm.get_color(3) == cm.over_color);
+  ColorMapper cm_test = ColorMapper();
+  REQUIRE(cm_test.get_color(-1) == cm_test.under_color);
+  REQUIRE(cm_test.get_color(0) == cm_test.lut[0]);
+  REQUIRE(cm_test.get_color(1) == cm_test.lut[255]);
+  REQUIRE(cm_test.get_color(3) == cm_test.over_color);
 }
-
-
 
 class ColorDict {
 
@@ -51,7 +48,7 @@ private:
   BLRandom r{1223};
 
 public:
-  BLRgba32 get_color(string name) { return BLRgba32(dict.at(name)); };
+  BLRgba32 get_color(std::string name) { return BLRgba32(dict.at(name)); };
 
   BLRgba32 get_random_color(void) {
     auto item = dict.begin();
@@ -61,15 +58,13 @@ public:
   }
 
   ColorDict(void) {
-    string line;
-    ifstream myfile("xkcd_colors.txt");
+    std::string line;
+    std::ifstream myfile("xkcd_colors.txt");
     if (myfile.is_open()) {
-      getline(myfile, line); // skip first line
-      while (getline(myfile, line)) {
-        cout << line << '\n';
+      std::getline(myfile, line); // skip first line
+      while (std::getline(myfile, line)) {
         auto color_pos = line.find("#");
         int val = std::stoi(line.substr(color_pos + 1), nullptr, 16);
-        cout << line.substr(color_pos);
         auto name = line.substr(0, color_pos);
         name.erase(name.find_last_not_of(" \n\r\t") + 1);
         auto color = BLRgba32(val);
@@ -79,6 +74,6 @@ public:
       };
       myfile.close();
     } else
-      cout << "Unable to open file";
+      std::cout << "Unable to open file";
   };
 };

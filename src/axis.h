@@ -1,6 +1,7 @@
 #include <vector>
 #include <functional>
 #include <array>
+#include <string>
 #include "./common.h"
 #include "canvas.h"
 #include "artists.h"
@@ -111,7 +112,7 @@ std::vector<double> calculate_ticks(const double left, const double right, const
         }
     }
 
-    if (step_taken == NAN) { return out; };
+    if (std::isnan(step_taken)) { return out; };
 
     for (int i = 0; i <= step_ticks; i++)
     {   
@@ -127,10 +128,10 @@ std::vector<double> calculate_ticks(const double left, const double right, const
     return out;
 }
 
-wstring inline format_tick(const double t) {
+std::wstring inline format_tick(const double t) {
     wchar_t buf[50];
     swprintf(buf, 50, L"%.1f", t);
-    return wstring(buf);
+    return std::wstring(buf);
 }
 
 void Axis::draw_ticks(BLContext& ctx) {
@@ -148,7 +149,7 @@ void Axis::draw_ticks(BLContext& ctx) {
             ctx.setStrokeAlpha(1.);
         }
         ctx.strokeLine(spos.x, -tick_length, spos.x, tick_length);                
-        auto path = font_manager.std_font.get_path(format_tick(t));        
+        auto path = glb::font_manager.std_font.get_path(format_tick(t));        
         auto px_pos = ctx.userMatrix().mapPoint(BLPoint(spos.x, - tick_length - 0.05));
         draw_text_path(ctx, path, px_pos, TextHA::center, TextVA::top);        
 
@@ -157,10 +158,11 @@ void Axis::draw_ticks(BLContext& ctx) {
     ctx.translate(position.x, -position.y);
     for (auto& t : yticks)
     {       
+        
         auto pos = BLPoint(0, t);
         auto spos = inch2data.mapPoint(pos);
         ctx.strokeLine(-tick_length, spos.y, tick_length, spos.y);
-        auto path = font_manager.std_font.get_path(format_tick(t));
+        auto path = glb::font_manager.std_font.get_path(format_tick(t));
         auto px_pos = ctx.userMatrix().mapPoint(BLPoint(-tick_length - 0.05, spos.y));
         draw_text_path(ctx, path, px_pos, TextHA::right, TextVA::center);
     }
